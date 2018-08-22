@@ -13,7 +13,6 @@ public final class JSON {
     private static final byte FINISH = 2;
     private static final byte KEY_HEAD = 3;
     private static final byte KEY_READ = 4;
-    private static final byte DIVIDER = 5;
 
     private static final byte VALUE_HEAD = 6;
     private static final byte VALUE_READ = 7;
@@ -33,12 +32,12 @@ public final class JSON {
 
     private JSON() {}
 
-    public static List<CharSequence> array(String input) {
+    public static List<String> array(String input) {
         return array(input.toCharArray());
     }
 
-    private static List<CharSequence> array(char[] input) {
-        LinkedList<CharSequence> result = new LinkedList<>();
+    private static List<String> array(char[] input) {
+        LinkedList<String> result = new LinkedList<>();
         int index = -1;
         int state = INIT;
 
@@ -120,13 +119,13 @@ public final class JSON {
 
                             case '[':
                                 int array_end = array_validate(input, index - 1);
-                                result.add(new Sequence(input, index, array_end - index + 1));
+                                result.add(new String(input, index, array_end - index + 1));
                                 index = array_end;
                                 state = VALUE_TAIL;
                                 continue main;
                             case '{':
                                 int object_end = object_validate(input, index - 1);
-                                result.add(new Sequence(input, index, object_end - index + 1));
+                                result.add(new String(input, index, object_end - index + 1));
                                 index = object_end;
                                 state = VALUE_TAIL;
                                 continue main;
@@ -306,7 +305,7 @@ public final class JSON {
                                                 }
                                     }
 
-                                result.add(new Sequence(input, start, index + 1 - start));
+                                result.add(new String(input, start, index + 1 - start));
 
                                 state = VALUE_TAIL;
                                 continue main;
@@ -400,7 +399,7 @@ public final class JSON {
                                                         state = SCREEN;
                                                         continue reader;
                                                     case '"':
-                                                        result.add(new Sequence(input, str_start, counter - str_start));
+                                                        result.add(new String(input, str_start, counter - str_start));
                                                         state = VALUE_TAIL;
                                                         continue main;
 
@@ -418,12 +417,12 @@ public final class JSON {
             }
     }
 
-    public static Map<CharSequence, CharSequence> object(String input) {
+    public static Map<String, String> object(String input) {
         return object(input.toCharArray());
     }
 
-    private static Map<CharSequence, CharSequence> object(char[] input) {
-        Map<CharSequence, CharSequence> result = new HashMap<>();
+    private static Map<String, String> object(char[] input) {
+        Map<String, String> result = new HashMap<>();
         int index = -1;
         int state = INIT;
 
@@ -547,7 +546,7 @@ public final class JSON {
                                             continue reader;
                                         case '"':
 
-                                            CharSequence key = new Sequence(input, key_start, key_counter - key_start);
+                                            String key = new String(input, key_start, key_counter - key_start);
 
                                             divider:
                                             while (true)
@@ -575,13 +574,13 @@ public final class JSON {
 
                                                     case '[':
                                                         int array_end = array_validate(input, index - 1);
-                                                        result.put(key, new Sequence(input, index, array_end - index + 1));
+                                                        result.put(key, new String(input, index, array_end - index + 1));
                                                         index = array_end;
                                                         state = VALUE_TAIL;
                                                         continue main;
                                                     case '{':
                                                         int object_end = object_validate(input, index - 1);
-                                                        result.put(key, new Sequence(input, index, object_end - index + 1));
+                                                        result.put(key, new String(input, index, object_end - index + 1));
                                                         index = object_end;
                                                         state = VALUE_TAIL;
                                                         continue main;
@@ -761,7 +760,7 @@ public final class JSON {
                                                                         }
                                                             }
 
-                                                        result.put(key, new Sequence(input, start, index + 1 - start));
+                                                        result.put(key, new String(input, start, index + 1 - start));
 
                                                         state = VALUE_TAIL;
                                                         continue main;
@@ -855,7 +854,7 @@ public final class JSON {
                                                                                 state = SCREEN;
                                                                                 continue value_reader;
                                                                             case '"':
-                                                                                result.put(key, new Sequence(input, str_start, counter - str_start));
+                                                                                result.put(key, new String(input, str_start, counter - str_start));
                                                                                 state = VALUE_TAIL;
                                                                                 continue main;
 
@@ -1653,38 +1652,5 @@ public final class JSON {
                         }
 
             }
-    }
-
-    private static class Sequence implements CharSequence {
-
-        private final char[] chars;
-        private final int start;
-        private final int size;
-
-        private Sequence(char[] chars, int start, int size) {
-            this.chars = chars;
-            this.start = start;
-            this.size = size;
-        }
-
-        @Override
-        public int length() {
-            return size - start;
-        }
-
-        @Override
-        public char charAt(int index) {
-            return chars[start + index];
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            return new Sequence(chars, this.start + start, end - start);
-        }
-
-        @Override
-        public String toString() {
-            return new String(chars, start, size);
-        }
     }
 }
