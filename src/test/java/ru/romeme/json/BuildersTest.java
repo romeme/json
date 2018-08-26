@@ -18,8 +18,8 @@ public class BuildersTest {
     @Test
     public void test() {
 
-        Assert.assertTrue(Json.array().build().isEmpty());
-        Assert.assertTrue(Json.object().build().isEmpty());
+        Assert.assertTrue(Json.Array.builder().build().isEmpty());
+        Assert.assertTrue(Json.Object.builder().build().isEmpty());
 
         List<?> array = Arrays.asList(123, "123", true, 1.0f, 10.6, null,
                 Arrays.asList(
@@ -29,7 +29,7 @@ public class BuildersTest {
                 ),
                 new HashMap<String, Object>() {{
                     put("int", 123);
-                    put("string", "123");
+                    put("parse", "123");
                     put("boolean", true);
                     put("float", 1.0f);
                     put("double", 1.0);
@@ -42,7 +42,7 @@ public class BuildersTest {
                             ),
                             new HashMap<String, Object>() {{
                                 put("int", 123);
-                                put("string", "123");
+                                put("parse", "123");
                                 put("boolean", true);
                                 put("float", 1.0f);
                                 put("double", 1.0);
@@ -53,7 +53,7 @@ public class BuildersTest {
                     ));
                     put("object", new HashMap<String, Object>() {{
                         put("int", 123);
-                        put("string", "123");
+                        put("parse", "123");
                         put("boolean", true);
                         put("float", 1.0f);
                         put("double", 1.0);
@@ -66,7 +66,7 @@ public class BuildersTest {
                                 ),
                                 new HashMap<String, Object>() {{
                                     put("int", 123);
-                                    put("string", "123");
+                                    put("parse", "123");
                                     put("boolean", true);
                                     put("float", 1.0f);
                                     put("double", 1.0);
@@ -80,12 +80,12 @@ public class BuildersTest {
                 }}
         );
 
-        List<String> copy = Json.array(array).build();
+        List<String> copy = Json.Array.builder(array).build();
         System.out.println(copy.toString());
         Assert.assertEquals(copy.size(), 8);
 
         try {
-            Json.array(Collections.singletonList(new Object())).build();
+            Json.Array.builder(Collections.singletonList(new Object())).build();
             throw new RuntimeException();
         }
         catch (UnsupportedOperationException ignored) {
@@ -93,7 +93,7 @@ public class BuildersTest {
         }
 
         try {
-            Json.object(new HashMap<String, Object>() {{ put("key", new Object());}});
+            Json.Object.builder(new HashMap<String, Object>() {{ put("key", new Object());}});
             throw new RuntimeException();
         }
         catch (UnsupportedOperationException ignored) {

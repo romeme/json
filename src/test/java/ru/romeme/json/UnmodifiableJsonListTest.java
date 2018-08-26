@@ -17,24 +17,24 @@ public class UnmodifiableJsonListTest {
     @Test
     public void test() {
 
-        List<Map.Entry<String, Json.Function<String, String>>> source = new ArrayList<>();
-        source.add(new Json.UnmodifiableListEntry("123", SAME));
-        source.add(new Json.UnmodifiableListEntry("123", WRAP));
-        source.add(new Json.UnmodifiableListEntry(null, SAME));
+        List<Json.Array.UnmodifiableEntry> source = new ArrayList<>();
+        source.add(new Json.Array.UnmodifiableEntry("123", SAME));
+        source.add(new Json.Array.UnmodifiableEntry("123", WRAP));
+        source.add(new Json.Array.UnmodifiableEntry(null, SAME));
 
 
-        List<Map.Entry<String, Json.Function<String, String>>> sourceCopy = new ArrayList<>();
-        sourceCopy.add(new Json.UnmodifiableListEntry("123", SAME));
-        sourceCopy.add(new Json.UnmodifiableListEntry("123", WRAP));
+        List<Json.Array.UnmodifiableEntry> sourceCopy = new ArrayList<>();
+        sourceCopy.add(new Json.Array.UnmodifiableEntry("123", SAME));
+        sourceCopy.add(new Json.Array.UnmodifiableEntry("123", WRAP));
 
-        Assert.assertTrue(new Json.UnmodifiableJsonList("[]").isEmpty());
-        Assert.assertTrue(new Json.UnmodifiableJsonList("[]".toCharArray()).isEmpty());
+        Assert.assertTrue(new Json.Array("[]").isEmpty());
+        Assert.assertTrue(new Json.Array("[]".toCharArray()).isEmpty());
 
-        Json.UnmodifiableJsonList list = new Json.UnmodifiableJsonList(source);
-        Json.UnmodifiableJsonList other = new Json.UnmodifiableJsonList(sourceCopy);
+        Json.Array list = new Json.Array(source);
+        Json.Array other = new Json.Array(sourceCopy);
 
-        sourceCopy.add(new Json.UnmodifiableListEntry(null, SAME));
-        Json.UnmodifiableJsonList copy = new Json.UnmodifiableJsonList(sourceCopy);
+        sourceCopy.add(new Json.Array.UnmodifiableEntry(null, SAME));
+        Json.Array copy = new Json.Array(sourceCopy);
 
         Assert.assertEquals(list.toString(), "[123,\"123\",null]");
         Assert.assertEquals(list, copy);
@@ -92,14 +92,6 @@ public class UnmodifiableJsonListTest {
 
         try {
             list.add(0, "222");
-            throw new RuntimeException();
-        }
-        catch (UnsupportedOperationException ignored) {
-            Assert.assertEquals(list, copy);
-        }
-
-        try {
-            list.removeRange(0, 1);
             throw new RuntimeException();
         }
         catch (UnsupportedOperationException ignored) {

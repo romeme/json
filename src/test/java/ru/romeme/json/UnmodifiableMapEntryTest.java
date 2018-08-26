@@ -11,11 +11,11 @@ public class UnmodifiableMapEntryTest {
 
     @Test
     public void test() {
-        Json.UnmodifiableMapEntry entry = new Json.UnmodifiableMapEntry(
+        Json.Object.UnmodifiableEntry entry = new Json.Object.UnmodifiableEntry(
             "key", "value", i -> i
         );
 
-        Json.UnmodifiableMapEntry copy = new Json.UnmodifiableMapEntry(
+        Json.Object.UnmodifiableEntry copy = new Json.Object.UnmodifiableEntry(
                 "key", "value", i -> i
         );
 

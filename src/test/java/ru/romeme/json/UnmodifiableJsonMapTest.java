@@ -15,20 +15,20 @@ public class UnmodifiableJsonMapTest {
     public void test() {
 
         Set<Map.Entry<String, String>> set = new HashSet<>();
-        set.add(new Json.UnmodifiableMapEntry("key1", "value1", i->i));
-        set.add(new Json.UnmodifiableMapEntry("key2", "value2", i->i));
+        set.add(new Json.Object.UnmodifiableEntry("key1", "value1", i->i));
+        set.add(new Json.Object.UnmodifiableEntry("key2", "value2", i->i));
 
         Set<Map.Entry<String, String>> setCopy = new HashSet<>();
-        setCopy.add(new Json.UnmodifiableMapEntry("key1", "value1", i->i));
-        setCopy.add(new Json.UnmodifiableMapEntry("key2", "value2", i->i));
+        setCopy.add(new Json.Object.UnmodifiableEntry("key1", "value1", i->i));
+        setCopy.add(new Json.Object.UnmodifiableEntry("key2", "value2", i->i));
 
 
-        Map<String, String> map = new Json.UnmodifiableJsonMap(set);
-        Map<String, String> copy = new Json.UnmodifiableJsonMap(setCopy);
+        Map<String, String> map = new Json.Object(set);
+        Map<String, String> copy = new Json.Object(setCopy);
 
 
-        Assert.assertTrue(new Json.UnmodifiableJsonMap("{}").isEmpty());
-        Assert.assertTrue(new Json.UnmodifiableJsonMap("{}".toCharArray()).isEmpty());
+        Assert.assertTrue(new Json.Object("{}").isEmpty());
+        Assert.assertTrue(new Json.Object("{}".toCharArray()).isEmpty());
         Assert.assertTrue(!map.isEmpty());
         Assert.assertEquals(map.size(), 2);
         Assert.assertTrue(map.containsKey("key1"));

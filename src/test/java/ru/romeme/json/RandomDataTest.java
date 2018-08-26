@@ -31,7 +31,7 @@ public class RandomDataTest {
                 }
 
                 String test = new String(out.toByteArray());
-                Assert.assertTrue(!Json.array(test).isEmpty());
+                Assert.assertTrue(!Json.Array.parse(test).isEmpty());
             }
         }
 
@@ -49,7 +49,7 @@ public class RandomDataTest {
                 }
 
                 String test = new String(out.toByteArray());
-                Assert.assertTrue(!Json.object(test).isEmpty());
+                Assert.assertTrue(!Json.Object.parse(test).isEmpty());
             }
         }
     }

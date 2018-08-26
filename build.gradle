@@ -4,10 +4,10 @@ plugins {
 }
 
 group 'ru.romeme'
-version '1.0.2'
+version '1.0.3'
 
-sourceCompatibility = 1.10
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()

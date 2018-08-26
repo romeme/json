@@ -10,19 +10,19 @@ import static ru.romeme.json.Json.WRAP;
  * Created by Roman.
  * r.alt.ctrl@gmail.com
  */
-public class UnmodifiableListEntryTest {
+public class UnmodifiableEntryTest {
 
     @Test
     public void test() {
-        Json.UnmodifiableListEntry entry = new Json.UnmodifiableListEntry(
+        Json.Array.UnmodifiableEntry entry = new Json.Array.UnmodifiableEntry(
                 "key", SAME
         );
 
-        Json.UnmodifiableListEntry copy = new Json.UnmodifiableListEntry(
+        Json.Array.UnmodifiableEntry copy = new Json.Array.UnmodifiableEntry(
                 "key", SAME
         );
 
-        Json.UnmodifiableListEntry other = new Json.UnmodifiableListEntry(
+        Json.Array.UnmodifiableEntry other = new Json.Array.UnmodifiableEntry(
                 "key", WRAP
         );
 
