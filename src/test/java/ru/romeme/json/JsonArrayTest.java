@@ -10,37 +10,37 @@ public class JsonArrayTest {
 
     @Test
     public void empty() {
-        Assert.assertTrue(Json.Array.parse("[]").isEmpty());
+        Assert.assertTrue(Json.array("[]").isEmpty());
     }
 
     @Test
     public void space_inside() {
-        Assert.assertTrue(Json.Array.parse("[   ]").isEmpty());
+        Assert.assertTrue(Json.array("[   ]").isEmpty());
     }
 
     @Test
     public void space_outside() {
-        Assert.assertTrue(Json.Array.parse("   []   ").isEmpty());
+        Assert.assertTrue(Json.array("   []   ").isEmpty());
     }
 
     @Test
     public void single_true() {
-        Assert.assertTrue(!Json.Array.parse("[true]").isEmpty());
+        Assert.assertTrue(!Json.array("[true]").isEmpty());
     }
 
     @Test
     public void single_false() {
-        Assert.assertTrue(!Json.Array.parse("[false]").isEmpty());
+        Assert.assertTrue(!Json.array("[false]").isEmpty());
     }
 
     @Test
     public void single_null() {
-        Assert.assertTrue(!Json.Array.parse("[null]").isEmpty());
+        Assert.assertTrue(!Json.array("[null]").isEmpty());
     }
 
     @Test
     public void single_string() {
-        Assert.assertTrue(!Json.Array.parse("[\"\123\"]").isEmpty());
+        Assert.assertTrue(!Json.array("[\"\123\"]").isEmpty());
     }
 
 
@@ -54,7 +54,7 @@ public class JsonArrayTest {
                 .collect(Collectors.toList())
                 .toString();
 
-        Assert.assertEquals(Json.Array.parse(array).size(), size);
+        Assert.assertEquals(Json.array(array).size(), size);
     }
 
     private static double round(double in, int exponent) {

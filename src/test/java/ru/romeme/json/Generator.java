@@ -2,80 +2,12 @@ package ru.romeme.json;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by Roman.
  * r.alt.ctrl@gmail.com
  */
 public class Generator {
-
-    static {
-//        File file = File.createTempFile("test", ".json", new File("./"));
-//        String data = Generator.object(100);
-//        try(FileOutputStream out =  new FileOutputStream(file)) {
-//            out.write(data.getBytes());
-//        }
-
-        {
-            List<Integer> integers =
-                    Json.Array.parse("[1,2,3,4,5]")
-                            .stream()
-                            .map(Integer::parseInt)
-                            .collect(Collectors.toList());
-        }
-
-        class Person {
-            private final String name;
-            private final int age;
-
-            private Person(Map<String, String> map) {
-                this(map.get("name"), Integer.parseInt(map.get("age")));
-            }
-
-            private Person(String name, int age) {
-                this.name = name;
-                this.age = age;
-            }
-        }
-        {
-            String input = "{ \"name\":\"Roman\", \"age\":\"28\"}";//age is a parse
-            Person person =
-                    Optional.of(Json.Object.parse(input))
-                            .map(map -> new Person(map.get("name"),(map.get("age", Integer::parseInt))))
-                            .get();
-            //or
-            person = Optional.of(Json.Object.parse(input))
-                    .map(Person::new)
-                    .get();
-
-        }
-
-        String str = "{ \"level-1\" : { \"level-2\": { int: 123 } } }";
-
-        Integer integer =
-                Optional.of(Json.Object.parse(str))
-                        .map(map -> map.get("level-1", Json.Object::new))
-                        .map(map -> map.get("level-2", Json.Object::new))
-                        .map(map -> map.get("int", Integer::parseInt))
-                        .orElseThrow(RuntimeException::new);
-
-
-        {
-            String input = "[{ \"name\":\"Roman\", \"age\":\"28\"}, { \"name\":\"Anna\", \"age\":\"32\"}]";
-            List<Person> persons =
-                    Json.Array.parse(input)
-                            .stream()
-                            .map(Json.Object::parse)
-                            .map(Person::new)
-                            .collect(Collectors.toList());
-
-        }
-
-
-    }
 
     private static char[] codes = "qwertyuiop[]asdfghjkl;'\\`zxcvbnm,./1234567890-=!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"|~ZXCVBNM<>?ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЁЯЧСМИТЬБЮ?йцукенгшщзхъфывапролджэё]ячсмитьбю/\r\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\n\t\b\f\r\r\r\r\r\r".toCharArray();
 
@@ -136,7 +68,7 @@ public class Generator {
                                     ? String.format("%s%f%s",
                                     spacing(), 10 * Math.random() - 10 * Math.random(), spacing())
                                     : String.format("%s%16.8E%s",
-                                            spacing(), Double.MAX_VALUE * Math.random() - Double.MAX_VALUE * Math.random(), spacing())
+                                    spacing(), Double.MAX_VALUE * Math.random() - Double.MAX_VALUE * Math.random(), spacing())
 
                     );
                     break;
@@ -250,9 +182,8 @@ public class Generator {
                                             ? String.format("%s%f%s",
                                             spacing(), 10 * Math.random() - 10 * Math.random(), spacing())
                                             : String.format("%s%16.8E%s",
-                                                    spacing(), Double.MAX_VALUE * Math.random() - Double.MAX_VALUE * Math.random(), spacing())
+                                            spacing(), Double.MAX_VALUE * Math.random() - Double.MAX_VALUE * Math.random(), spacing())
                             )
-
 
                     );
 
@@ -309,7 +240,6 @@ public class Generator {
         builder.append('}');
         builder.append(spacing());
         return builder.toString();
-
 
     }
 }
