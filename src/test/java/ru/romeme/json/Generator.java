@@ -23,7 +23,7 @@ public class Generator {
     }
 
     static String string(int size) {
-        return Json.wrap(rnd(codes, size));
+        return JSTools.encode(rnd(codes, size)).get();
     }
 
     static String spacing() {

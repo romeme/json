@@ -1,10 +1,10 @@
 package ru.romeme.json;
 
-import com.sun.corba.se.spi.copyobject.CopyobjectDefaults;
-
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by Roman.
@@ -30,7 +30,6 @@ public class Json {
     private static final int ARRAY_DIVIDER_OR_END = ARRAY_NEXT << 1;
     private static final int ARRAY_APPEND = ARRAY_DIVIDER_OR_END << 1;
 
-
     private static final int NUMBER = ARRAY_APPEND << 1;
     private static final int NUMBER_INIT = NUMBER << 1;
     private static final int NUMBER_PREFIX = NUMBER_INIT << 1;
@@ -53,28 +52,27 @@ public class Json {
     private static final int NULL = FALSE << 1;
 
     public static Optional<Map<String, String>> object(String input) {
-        return read(input, new MapCollector(), OBJECT);
+        return read(input, new MapAccumulator(), OBJECT);
     }
+
 
     public static Optional<List<String>> array(String input) {
-        return read(input, new ArrayCollector(), ARRAY);
+        return read(input, new ArrayAccumulator(), ARRAY);
     }
 
-    private static <K> Optional<K> read(String input, Collector<K> collector, int st) {
-        return read(input.toCharArray(), collector, st);
+    private static <K> Optional<K> read(String input, Accumulator<K> accumulator, int st) {
+        return read(input.toCharArray(), accumulator, st);
     }
 
-
-    private static <K> Optional<K> read(char[] input, Collector<K> collector, int st) {
-        Stack<Collector<?>> collectors = new Stack<>();
-        collectors.push(collector);
+    private static <K> Optional<K> read(char[] input, Accumulator<K> accumulator, int st) {
+        Stack<Accumulator<?>> accumulators = new Stack<>();
+        accumulators.push(accumulator);
         Stack<Integer> states = new Stack<>();
         states.push(EXIT);
         states.push(st);
 
         main:
         for (int index = 0; index < input.length; ) {
-
 
             switch (states.peek()) {
                 case OBJECT:
@@ -226,14 +224,14 @@ public class Json {
                                 states.push(OBJECT_DIVIDER_OR_END);
                                 states.push(OBJECT_APPEND);
                                 states.push(OBJECT);
-                                collectors.push(new MapCollector());
+                                accumulators.push(new MapAccumulator());
 
                                 continue main;
                             case '[':
                                 states.push(OBJECT_DIVIDER_OR_END);
                                 states.push(ARRAY_APPEND);
                                 states.push(ARRAY);
-                                collectors.push(new ArrayCollector());
+                                accumulators.push(new ArrayAccumulator());
 
                                 continue main;
                             default:
@@ -274,11 +272,11 @@ public class Json {
 
                 case OBJECT_APPEND:
                     states.pop();
-                    Optional<String> map = collectors.pop().collect().map(String::valueOf);
+                    Optional<String> map = accumulators.pop().collect().map(String::valueOf);
                     if (!map.isPresent())
                         return Optional.empty();
 
-                    collectors.peek().append(map.get());
+                    accumulators.peek().append(map.get());
                     continue main;
 
                 case ARRAY:
@@ -356,13 +354,13 @@ public class Json {
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 states.push(OBJECT_APPEND);
                                 states.push(OBJECT);
-                                collectors.push(new MapCollector());
+                                accumulators.push(new MapAccumulator());
                                 continue main;
                             case '[':
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 states.push(ARRAY_APPEND);
                                 states.push(ARRAY);
-                                collectors.push(new ArrayCollector());
+                                accumulators.push(new ArrayAccumulator());
 
                                 continue main;
 
@@ -425,14 +423,14 @@ public class Json {
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 states.push(OBJECT_APPEND);
                                 states.push(OBJECT);
-                                collectors.push(new MapCollector());
+                                accumulators.push(new MapAccumulator());
 
                                 continue main;
                             case '[':
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 states.push(ARRAY_APPEND);
                                 states.push(ARRAY);
-                                collectors.push(new ArrayCollector());
+                                accumulators.push(new ArrayAccumulator());
 
                                 continue main;
                             default:
@@ -441,7 +439,6 @@ public class Json {
                     }
 
                     return Optional.empty();
-
 
                 case ARRAY_DIVIDER_OR_END:
                     states.pop();
@@ -474,11 +471,11 @@ public class Json {
 
                 case ARRAY_APPEND:
                     states.pop();
-                    Optional<String> arr = collectors.pop().collect().map(String::valueOf);
+                    Optional<String> arr = accumulators.pop().collect().map(String::valueOf);
                     if (!arr.isPresent())
                         return Optional.empty();
 
-                    collectors.peek().append(arr.get());
+                    accumulators.peek().append(arr.get());
                     continue main;
 
                 case STRING: {
@@ -557,7 +554,7 @@ public class Json {
                                         continue string;
                                     case '"':
                                         index++;
-                                        collectors.peek().append(new String(input, start, index - start));
+                                        accumulators.peek().append(new String(input, start, index - start));
                                         continue main;
                                     default:
                                         continue string;
@@ -761,7 +758,7 @@ public class Json {
                                     }
 
                             case NUMBER_EXIT: {
-                                collectors.peek().append(new String(input, start, index - start));
+                                accumulators.peek().append(new String(input, start, index - start));
                                 continue main;
                             }
                         }
@@ -784,7 +781,7 @@ public class Json {
                                 continue loop;
                             case 1 << 1 | 'l':
                                 index++;
-                                collectors.peek().append("null");
+                                accumulators.peek().append("null");
                                 continue main;
                         }
                     }
@@ -804,7 +801,7 @@ public class Json {
                                 continue loop;
                             case 1 << 1 | 'e':
                                 index++;
-                                collectors.peek().append("true");
+                                accumulators.peek().append("true");
                                 continue main;
                         }
                     }
@@ -825,7 +822,7 @@ public class Json {
                                 continue loop;
                             case 1 << 1 | 'e':
                                 index++;
-                                collectors.peek().append("false");
+                                accumulators.peek().append("false");
                                 continue main;
                         }
                     }
@@ -833,22 +830,23 @@ public class Json {
                 }
 
                 case EXIT:
-                    return collector.collect();
+                    return accumulator.collect();
             }
 
         }
 
-        return collector.collect();
+        return accumulator.collect();
     }
 
+    interface Accumulator<R> {
 
-    interface Collector<R> {
         void append(String key);
 
         Optional<R> collect();
     }
 
-    static class MapCollector implements Collector<Map<String, String>> {
+    static class MapAccumulator implements Accumulator<Map<String, String>> {
+
         private List<String> map = new ArrayList<>();
 
         @Override
@@ -887,7 +885,8 @@ public class Json {
         }
     }
 
-    static class ArrayCollector implements Collector<List<String>> {
+    static class ArrayAccumulator implements Accumulator<List<String>> {
+
         private List<String> array = new ArrayList<>();
 
         @Override
@@ -899,35 +898,6 @@ public class Json {
         public Optional<List<String>> collect() {
             return Optional.of(array);
         }
-    }
-
-    public static Builder builder() {
-        return new Builder() {
-
-            @Override
-            public Builder put(String key, Object value) {
-                return null;
-            }
-
-            @Override
-            public Builder join(Builder builder) {
-                return null;
-            }
-
-            @Override
-            public Map<String, ?> build() {
-                return null;
-            }
-        };
-    }
-
-
-    public interface Builder {
-
-        Builder put(String key, Object value);
-        Builder join(Builder builder);
-
-        Map<String, ?> build();
     }
 
 }
