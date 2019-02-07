@@ -14,7 +14,7 @@ public class ObjectSerializationTest {
                 new HashMap<>()
                         .entrySet()
                         .stream()
-                        .collect(new JSMapCollector<>());
+                        .collect(JSObject.collector());
 
         Assert.assertTrue(rs.isPresent());
         String json = rs.get();
