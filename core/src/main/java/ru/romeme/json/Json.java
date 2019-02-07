@@ -1,4 +1,4 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
  * r.alt.ctrl@gmail.com
  */
 @SuppressWarnings("Duplicates")
-class Json {
+public class Json {
 
     private static final int EXIT = 0;
     private static final int INIT = 1;

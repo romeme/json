@@ -1,4 +1,4 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
 
 import java.util.Optional;
 

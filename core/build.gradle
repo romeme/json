@@ -2,11 +2,9 @@ group 'ru.romeme.json'
 version '0.1'
 
 apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
 
 repositories {
     mavenCentral()
@@ -16,33 +14,4 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.12'
-}
-
-task sources(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task docs(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sources
-    archives docs
-}
-
-publishing {
-
-    repositories {
-        mavenLocal()
-    }
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact tasks.sources
-            artifact tasks.docs
-        }
-    }
 }

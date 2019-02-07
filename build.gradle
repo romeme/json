@@ -18,3 +18,44 @@ dependencies {
     compile project(":core")
     compile project(":fn")
 }
+
+allprojects {
+
+    if (rootProject == it) return
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+
+    group rootProject.group
+    version rootProject.version
+
+    task sources(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task docs(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sources
+        archives docs
+    }
+
+    publishing {
+
+        repositories {
+            mavenLocal()
+        }
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact tasks.sources
+                artifact tasks.docs
+            }
+        }
+    }
+}

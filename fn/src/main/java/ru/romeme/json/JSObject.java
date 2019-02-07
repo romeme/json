@@ -1,4 +1,6 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
+
+import ru.romeme.json.Json;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -12,7 +14,7 @@ import java.util.stream.IntStream;
 public class JSObject extends Json {
 
     public static Optional<Map<String, String>> parse(String input) {
-        return read(input, new Json.MapAccumulator(), OBJECT)
+        return Json.read(input, new Json.MapAccumulator(), Json.OBJECT)
                 .flatMap(arr ->
                         Optional.of(arr)
                                 .filter(mp -> mp.size() % 2 == 0)
@@ -54,11 +56,11 @@ public class JSObject extends Json {
                                 Optional.of(new HashMap<String, String>()),
                                 (mapOP, en) ->
                                         mapOP.flatMap(map ->
-                                                decode(en.getKey())
+                                                Json.decode(en.getKey())
                                                         .flatMap(key ->
                                                                 en.getValue().matches("^\".+\"$")
                                                                         ?
-                                                                        decode(en.getValue())
+                                                                        Json.decode(en.getValue())
                                                                                 .map(vv ->
                                                                                         new HashMap<String, String>(map) {{
                                                                                             put(key, vv);
@@ -120,9 +122,9 @@ public class JSObject extends Json {
                                         mapOP.flatMap(map ->
                                                 en.getKey() instanceof CharSequence
                                                         ?
-                                                        encode(en.getKey())
+                                                        Json.encode(en.getKey())
                                                                 .flatMap(key ->
-                                                                        encode(en.getValue())
+                                                                        Json.encode(en.getValue())
                                                                                 .map(vv -> new HashMap<String, String>(map) {{
                                                                                     put(key, vv);
                                                                                 }})

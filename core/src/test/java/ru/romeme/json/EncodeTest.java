@@ -1,7 +1,9 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.romeme.json.Json;
+import ru.romeme.json.UnmodifiableMap;
 
 import java.util.Arrays;
 import java.util.Collections;

@@ -1,4 +1,6 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
+
+import ru.romeme.json.Json;
 
 import java.util.ArrayList;
 import java.util.List;

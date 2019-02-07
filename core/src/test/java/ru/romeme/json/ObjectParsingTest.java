@@ -1,4 +1,4 @@
-package ru.romeme.json.core;
+package ru.romeme.json;
 
 import org.junit.Assert;
 import org.junit.Test;
