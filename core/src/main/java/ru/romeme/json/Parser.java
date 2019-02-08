@@ -49,7 +49,7 @@ class Parser {
     private static final int TRUE = UNICODE << 1;
     private static final int FALSE = TRUE << 1;
 
-      static String join(String div, List<String> in) {
+    static String join(String div, List<String> in) {
         StringBuilder builder = new StringBuilder();
         for (int index = 0; index < in.size() * 2 - 1; index++)
             builder.append(
@@ -258,7 +258,7 @@ class Parser {
     }
 
     private static String string(String input) {
-        if (input == null )
+        if (input == null)
             return null;
 
         StringBuilder builder = new StringBuilder();
@@ -1131,7 +1131,22 @@ class Parser {
 
                 case EXIT:
                     states.pop();
-                    return accumulator.collect();
+                    loop:
+                    for (; index < input.length; index++) {
+                        char ch = input[index];
+                        switch (ch) {
+                            case '\r':
+                            case '\n':
+                            case '\f':
+                            case '\t':
+                            case '\b':
+                            case ' ':
+                                continue loop;
+                            default:
+                                return null;
+                        }
+                    }
+                    break main;
             }
 
         }
@@ -1157,9 +1172,6 @@ class Parser {
 
         @Override
         public List<String> collect() {
-            if (map.size() % 2 != 0)
-                return null;
-
             return new ArrayList<String>(map) {
 
                 @Override

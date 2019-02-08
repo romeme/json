@@ -454,6 +454,8 @@ public class ObjectParsingTest {
         Assert.assertNull(JSObject.parse("[]"));
 
         Assert.assertNull(JSObject.parse(""));
+
+        Assert.assertNull(JSObject.parse("{} ["));
         Assert.assertNull(JSObject.parse("{ "));
         Assert.assertNull(JSObject.parse("{ int }"));
         Assert.assertNull(JSObject.parse("{ int : 1 }"));
