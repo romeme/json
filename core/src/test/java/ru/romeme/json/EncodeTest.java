@@ -2,8 +2,6 @@ package ru.romeme.json;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.romeme.json.Json;
-import ru.romeme.json.UnmodifiableMap;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,112 +15,101 @@ public class EncodeTest {
     public void stringCheck() {
 
         Assert.assertEquals("\"\\u0123\\u4567\\u8989\\uAABB\\uCCDD\\uEEFF\\n\\r\\f\\t\\b\\\"\\\\\"",
-                Json.encode("\u0123\u4567\u8989\uaAbB\ucCdD\ueEfF\n\r\f\t\b\"\\").orElse(""));
+                Parser.encode("\u0123\u4567\u8989\uaAbB\ucCdD\ueEfF\n\r\f\t\b\"\\"));
     }
 
     @Test
     public void numberCheck() {
 
-        Assert.assertEquals("1", Json.encode(1).orElse(""));
-        Assert.assertEquals("1.0", Json.encode(Float.valueOf(1)).orElse(""));
-        Assert.assertEquals("1.0", Json.encode(Double.valueOf(1)).orElse(""));
+        Assert.assertEquals("1", Parser.encode(1));
+        Assert.assertEquals("1.0", Parser.encode(Float.valueOf(1)));
+        Assert.assertEquals("1.0", Parser.encode(Double.valueOf(1)));
 
-        Assert.assertEquals("1.1", Json.encode(1.1F).orElse(""));
-        Assert.assertEquals("1.000001", Json.encode(1.000001).orElse(""));
-        Assert.assertEquals("15", Json.encode(0xF).orElse(""));
-        Assert.assertEquals("1.1E-12", Json.encode(1.1E-12).orElse(""));
-        Assert.assertEquals("1.0E12", Json.encode(1.0E+12).orElse(""));
+        Assert.assertEquals("1.1", Parser.encode(1.1F));
+        Assert.assertEquals("1.000001", Parser.encode(1.000001));
+        Assert.assertEquals("15", Parser.encode(0xF));
+        Assert.assertEquals("1.1E-12", Parser.encode(1.1E-12));
+        Assert.assertEquals("1.0E12", Parser.encode(1.0E+12));
     }
 
     @Test
     public void nullCheck() {
-        Assert.assertEquals("null", Json.encode(null).orElse(""));
+        Assert.assertEquals("null", Parser.encode(null));
     }
 
     @Test
     public void boolCheck() {
-        Assert.assertEquals("true", Json.encode(true).orElse(""));
-        Assert.assertEquals("false", Json.encode(false).orElse(""));
-        Assert.assertEquals("true", Json.encode(Boolean.TRUE).orElse(""));
-        Assert.assertEquals("false", Json.encode(Boolean.FALSE).orElse(""));
+        Assert.assertEquals("true", Parser.encode(true));
+        Assert.assertEquals("false", Parser.encode(false));
+        Assert.assertEquals("true", Parser.encode(Boolean.TRUE));
+        Assert.assertEquals("false", Parser.encode(Boolean.FALSE));
     }
 
     @Test
     public void arrayCheck() {
         Assert.assertEquals("[ 1, 2 ]",
-                Json.encode(Arrays.asList(1, 2)).orElse(""));
+                Parser.encode(Arrays.asList(1, 2)));
 
         Assert.assertEquals("[ 1, null, true, false, true, false ]",
-                Json.encode(Arrays.asList(1, null, true, false, Boolean.TRUE, Boolean.FALSE)).orElse(""));
+                Parser.encode(Arrays.asList(1, null, true, false, Boolean.TRUE, Boolean.FALSE)));
 
         Assert.assertEquals("[ \"\" ]",
-                Json.encode(Collections.singletonList("")).orElse(""));
+                Parser.encode(Collections.singletonList("")));
 
         Assert.assertEquals("[ \"123\" ]",
-                Json.encode(Collections.singletonList("123")).orElse(""));
+                Parser.encode(Collections.singletonList("123")));
 
         Assert.assertEquals("[ { \"1\" : 12 } ]",
-                Json.encode(Collections.singletonList(UnmodifiableMap.builder().put("1", 12).get())).orElse(""));
+                Parser.encode(Collections.singletonList(UnmodifiableMap.builder().put("1", 12).build())));
 
         Assert.assertEquals("[ [ 1, 2, 3 ] ]",
-                Json.encode(Collections.singletonList(Arrays.asList(1, 2, 3))).orElse(""));
+                Parser.encode(Collections.singletonList(Arrays.asList(1, 2, 3))));
     }
 
     @Test
     public void objectCheck() {
         Assert.assertEquals("{ \"int\" : 12 }",
-                Json.encode(UnmodifiableMap.builder().put("int", 12).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("int", 12).build()));
 
         Assert.assertEquals("{ \"float\" : 12.0 }",
-                Json.encode(UnmodifiableMap.builder().put("float", 12f).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("float", 12f).build()));
 
         Assert.assertEquals("{ \"double\" : 12.0 }",
-                Json.encode(UnmodifiableMap.builder().put("double", 12.0).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("double", 12.0).build()));
 
         Assert.assertEquals("{ \"object\" : {  } }",
-                Json.encode(UnmodifiableMap.builder().put("object", new HashMap<>()).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("object", new HashMap<>()).build()));
 
-        Assert.assertEquals("{ \"object\" : { \"double\" : 1.0, \"float\" : 1.0, \"string\" : \"sub-vv\", \"sub-object\" : { \"null\" : null, \"double\" : 1.0, \"float\" : 1.0, \"string\" : \"sub-vv\", \"int\" : 1, \"object\" : {  }, \"array\" : [  ] }, \"int\" : 1, \"array\" : [ 1, null, 1.0, 1.0, [  ], {  } ] } }",
-                Json.encode(
+        Assert.assertEquals("{ \"object\" : { \"sub-object\" : { \"int\" : 1 } } }",
+                Parser.encode(
                         UnmodifiableMap.builder().put("object",
                                 UnmodifiableMap.builder()
-                                        .put("int", 1)
-                                        .put("float", 1.0f)
-                                        .put("double", 1.0)
-                                        .put("string", "sub-vv")
-                                        .put("array", Arrays.asList(1, null, 1.0f, 1.0, Collections.emptyList(), Collections.emptyMap()))
-                                        .put("sub-object",
+                                         .put("sub-object",
                                                 UnmodifiableMap.builder()
                                                         .put("int", 1)
-                                                        .put("float", 1.0f)
-                                                        .put("double", 1.0)
-                                                        .put("null", null)
-                                                        .put("string", "sub-vv")
-                                                        .put("array", Collections.emptyList())
-                                                        .put("object", Collections.emptyMap())
-                                                        .get()
+                                                        .build()
                                         )
-                                        .get()
+                                        .build()
                         )
-                                .get()
-                ).orElse(""));
+                                .build()
+                ));
 
         Assert.assertEquals("{ \"array\" : [  ] }",
-                Json.encode(UnmodifiableMap.builder().put("array", Collections.emptyList()).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("array", Collections.emptyList()).build()));
 
         Assert.assertEquals("{ \"array\" : [ 1, null, \"\", {  }, [  ] ] }",
-                Json.encode(UnmodifiableMap.builder().put("array", Arrays.asList(1, null, "", Collections.emptyMap(), Collections.emptyList())).get()).orElse(""));
+                Parser.encode(UnmodifiableMap.builder().put("array", Arrays.asList(1, null, "", Collections.emptyMap(), Collections.emptyList())).build()));
     }
 
     @Test
     public void incorrectTest() {
-        Assert.assertTrue(Json.encode(UUID.randomUUID()).isEmpty());
+        Assert.assertNull(Parser.encode(UUID.randomUUID()));
 
-        Assert.assertTrue(Json.encode(Arrays.asList(1, null, UUID.randomUUID())).isEmpty());
+        Assert.assertNull(Parser.encode(Arrays.asList(1, null, UUID.randomUUID())));
 
-        Assert.assertTrue(Json.encode(Arrays.asList(1, null, Arrays.asList(1, null, UUID.randomUUID()))).isEmpty());
+        Assert.assertNull(Parser.encode(Arrays.asList(1, null, Arrays.asList(1, null, UUID.randomUUID()))));
 
-        Assert.assertTrue(Json.encode(
+        Assert.assertNull(Parser.encode(
                 new HashMap<String, Object>() {{
                     put("int", 123);
                     put("null", null);
@@ -132,7 +119,7 @@ public class EncodeTest {
                                 put("key", UUID.randomUUID());
                             }});
                 }}
-        ).isEmpty());
+        ));
 
     }
 

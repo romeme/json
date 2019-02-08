@@ -1,6 +1,6 @@
 package ru.romeme.json;
 
-import ru.romeme.json.Json;
+import ru.romeme.json.Parser;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -11,10 +11,10 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class JSObject extends Json {
+public class FnObject extends Parser {
 
     public static Optional<Map<String, String>> parse(String input) {
-        return Json.read(input, new Json.MapAccumulator(), Json.OBJECT)
+        return Optional.ofNullable(Parser.read(input, new MapAccumulator(), OBJECT))
                 .flatMap(arr ->
                         Optional.of(arr)
                                 .filter(mp -> mp.size() % 2 == 0)
@@ -26,13 +26,12 @@ public class JSObject extends Json {
                                                 .stream()
                                                 .collect(trimmer())
                                 )
-
                 );
 
     }
 
     static Collector<Map.Entry<String, String>, Map<String, String>, Optional<Map<String, String>>> trimmer() {
-        return new Collector<>() {
+        return new Collector<Map.Entry<String, String>, Map<String, String>, Optional<Map<String, String>>>() {
 
             @Override
             public Supplier<Map<String, String>> supplier() {
@@ -46,7 +45,7 @@ public class JSObject extends Json {
 
             @Override
             public BinaryOperator<Map<String, String>> combiner() {
-                return (mapF, mapS) -> new HashMap<>(mapF) {{ putAll(mapS); }};
+                return (mapF, mapS) -> new HashMap<String, String>(mapF) {{ putAll(mapS); }};
             }
 
             @Override
@@ -56,11 +55,11 @@ public class JSObject extends Json {
                                 Optional.of(new HashMap<String, String>()),
                                 (mapOP, en) ->
                                         mapOP.flatMap(map ->
-                                                Json.decode(en.getKey())
+                                                Optional.ofNullable(decode(en.getKey()))
                                                         .flatMap(key ->
                                                                 en.getValue().matches("^\".+\"$")
                                                                         ?
-                                                                        Json.decode(en.getValue())
+                                                                        Optional.ofNullable(decode(en.getValue()))
                                                                                 .map(vv ->
                                                                                         new HashMap<String, String>(map) {{
                                                                                             put(key, vv);
@@ -96,7 +95,7 @@ public class JSObject extends Json {
     }
 
     public static Collector<Map.Entry<?, ?>, Map<Object, Object>, Optional<String>> collector() {
-        return new Collector<>() {
+        return new Collector<Map.Entry<?, ?>, Map<Object, Object>, Optional<String>>() {
 
             @Override
             public Supplier<Map<Object, Object>> supplier() {
@@ -110,7 +109,7 @@ public class JSObject extends Json {
 
             @Override
             public BinaryOperator<Map<Object, Object>> combiner() {
-                return (mapF, mapS) -> new HashMap<>(mapF) {{ putAll(mapS); }};
+                return (mapF, mapS) -> new HashMap<Object, Object>(mapF) {{ putAll(mapS); }};
             }
 
             @Override
@@ -122,9 +121,9 @@ public class JSObject extends Json {
                                         mapOP.flatMap(map ->
                                                 en.getKey() instanceof CharSequence
                                                         ?
-                                                        Json.encode(en.getKey())
+                                                        Optional.ofNullable(encode(en.getKey()))
                                                                 .flatMap(key ->
-                                                                        Json.encode(en.getValue())
+                                                                        Optional.ofNullable(encode(en.getValue()))
                                                                                 .map(vv -> new HashMap<String, String>(map) {{
                                                                                     put(key, vv);
                                                                                 }})

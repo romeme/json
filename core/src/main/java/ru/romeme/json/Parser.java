@@ -1,15 +1,16 @@
 package ru.romeme.json;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by Roman.
  * r.alt.ctrl@gmail.com
  */
 @SuppressWarnings("Duplicates")
-public class Json {
+class Parser {
 
     private static final int EXIT = 0;
     private static final int INIT = 1;
@@ -48,294 +49,323 @@ public class Json {
     private static final int TRUE = UNICODE << 1;
     private static final int FALSE = TRUE << 1;
 
-    static <K> Optional<String> encode(K e) {
-        if (Objects.isNull(e))
-            return Optional.of("null");
+      static String join(String div, List<String> in) {
+        StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < in.size() * 2 - 1; index++)
+            builder.append(
+                    index % 2 == 1
+                            ? div
+                            : in.get(index / 2)
+            );
+        return builder.toString();
+    }
+
+    static <K> String encode(K e) {
+        if (e == null)
+            return "null";
         else if (e instanceof Number || e instanceof Boolean)
-            return Optional.of(String.valueOf(e));
+            return String.valueOf(e);
         else if (e instanceof CharSequence)
             return string(String.valueOf(e));
-        else if (e instanceof List<?>)
-            return ((List<?>) e).stream().collect(JSArray.collector());
-        else if (e instanceof Map<?, ?>)
-            return ((Map<?, ?>) e).entrySet().stream().collect(JSObject.collector());
-        else
-            return Optional.empty();
+        else if (e instanceof List<?>) {
+            List<String> rs = new ArrayList<>();
+            String vv;
+            for (Object o : ((List<?>) e)) {
+                if ((vv = encode(o)) != null)
+                    rs.add(vv);
+                else
+                    return null;
+            }
+            return String.format("[ %s ]", join(", ", rs));
+        } else if (e instanceof Map<?, ?>) {
+            List<String> rs = new ArrayList<>();
+            String kk;
+            String vv;
+            for (Map.Entry<?, ?> en : ((Map<?, ?>) e).entrySet()) {
+                if ((vv = encode(en.getValue())) != null && (kk = encode(en.getKey())) != null)
+                    rs.add(String.format("%s : %s", kk, vv));
+                else
+                    return null;
+            }
+            return String.format("{ %s }", join(", ", rs));
+        } else
+            return null;
     }
 
-    static Optional<String> decode(String input) {
-        return Optional.ofNullable(input)
-                .map(String::toCharArray)
-                .flatMap(arr -> {
-                    int state = INIT;
+    static String decode(String input) {
 
-                    StringBuilder builder = new StringBuilder();
-                    int unicode = 0;
+        if (input == null)
+            return null;
 
-                    string:
-                    for (int index = 0; index < arr.length; index++) {
-                        char ch = arr[index];
+        char[] arr = input.toCharArray();
+        int state = INIT;
 
-                        switch (state) {
-                            case 0:
-                                return Optional.empty();
-                            case INIT:
-                                state = ch == '"' ? NORMAL : 0;
-                                continue string;
-                            case UNICODE_END:
-                                index--;
-                                builder.append((char) unicode);
-                                state >>= 1;
-                                continue string;
+        StringBuilder builder = new StringBuilder();
+        int unicode = 0;
 
-                            case UNICODE:
-                            case UNICODE >> 1:
-                            case UNICODE >> 2:
-                            case UNICODE >> 3:
-                                switch (ch) {
-                                    case '0':
-                                        unicode <<= 4;
-                                        state >>= 1;
-                                        continue string;
-                                    case '1':
-                                        unicode = (unicode << 4) | 0x1;
-                                        state >>= 1;
-                                        continue string;
-                                    case '2':
-                                        unicode = (unicode << 4) | 0x2;
-                                        state >>= 1;
-                                        continue string;
-                                    case '3':
-                                        unicode = (unicode << 4) | 0x3;
-                                        state >>= 1;
-                                        continue string;
-                                    case '4':
-                                        unicode = (unicode << 4) | 0x4;
-                                        state >>= 1;
-                                        continue string;
-                                    case '5':
-                                        unicode = (unicode << 4) | 0x5;
-                                        state >>= 1;
-                                        continue string;
-                                    case '6':
-                                        unicode = (unicode << 4) | 0x6;
-                                        state >>= 1;
-                                        continue string;
-                                    case '7':
-                                        unicode = (unicode << 4) | 0x7;
-                                        state >>= 1;
-                                        continue string;
-                                    case '8':
-                                        unicode = (unicode << 4) | 0x8;
-                                        state >>= 1;
-                                        continue string;
-                                    case '9':
-                                        unicode = (unicode << 4) | 0x9;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'A':
-                                    case 'a':
-                                        unicode = (unicode << 4) | 0xA;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'B':
-                                    case 'b':
-                                        unicode = (unicode << 4) | 0xB;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'C':
-                                    case 'c':
-                                        unicode = (unicode << 4) | 0xC;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'D':
-                                    case 'd':
-                                        unicode = (unicode << 4) | 0xD;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'E':
-                                    case 'e':
-                                        unicode = (unicode << 4) | 0xE;
-                                        state >>= 1;
-                                        continue string;
-                                    case 'F':
-                                    case 'f':
-                                        unicode = (unicode << 4) | 0xF;
-                                        state >>= 1;
-                                        continue string;
-                                    default:
-                                        return Optional.empty();
-                                }
+        string:
+        for (int index = 0; index < arr.length; index++) {
+            char ch = arr[index];
 
-                            case SCREEN:
+            switch (state) {
+                case 0:
+                    return null;
+                case INIT:
+                    state = ch == '"' ? NORMAL : 0;
+                    continue string;
+                case UNICODE_END:
+                    index--;
+                    builder.append((char) unicode);
+                    state >>= 1;
+                    continue string;
 
-                                switch (ch) {
-                                    case 'r':
-                                        builder.append('\r');
-                                        state = NORMAL;
-                                        continue string;
-                                    case 'n':
-                                        builder.append('\n');
-                                        state = NORMAL;
-                                        continue string;
-                                    case 't':
-                                        builder.append('\t');
-                                        state = NORMAL;
-                                        continue string;
-                                    case 'b':
-                                        builder.append('\b');
-                                        state = NORMAL;
-                                        continue string;
-                                    case 'f':
-                                        builder.append('\f');
-                                        state = NORMAL;
-                                        continue string;
-                                    case '\\':
-                                        builder.append('\\');
-                                        state = NORMAL;
-                                        continue string;
-                                    case '"':
-                                        builder.append('"');
-                                        state = NORMAL;
-                                        continue string;
-                                    case 'u':
-                                        unicode = 0;
-                                        state = UNICODE;
-                                        continue string;
-                                    default:
-                                        return Optional.empty();
-                                }
-
-                            case NORMAL:
-                                switch (ch) {
-                                    case '\\':
-                                        state = SCREEN;
-                                        continue string;
-                                    case '"':
-                                        return Optional.of(builder.toString());
-                                    default:
-                                        builder.append(ch);
-                                        continue string;
-                                }
-
-                            default:
-                                return Optional.empty();
-                        }
-                    }
-                    return Optional.empty();
-                });
-    }
-
-    private static Optional<String> string(String op) {
-        return Optional.ofNullable(op)
-                .map(input ->
-                {
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("\"");
-
-                    for (char ch : input.toCharArray()) {
-                        switch (ch) {
-                            case '\"':
-                                builder.append("\\\"");
-                                break;
-                            case '\\':
-                                builder.append("\\\\");
-                                break;
-                            case '\n':
-                                builder.append("\\n");
-                                break;
-                            case '\r':
-                                builder.append("\\r");
-                                break;
-                            case '\t':
-                                builder.append("\\t");
-                                break;
-                            case '\b':
-                                builder.append("\\b");
-                                break;
-                            case '\f':
-                                builder.append("\\f");
-                                break;
-                            default:
-                                if (ch <= 127)
-                                    builder.append(ch);
-                                else {
-                                    builder.append("\\u");
-                                    for (int round = 12; round >= 0; round -= 4)
-                                        switch ((ch >> round) & 0xF) {
-                                            case 0x0:
-                                                builder.append("0");
-                                                break;
-                                            case 0x1:
-                                                builder.append('1');
-                                                break;
-                                            case 0x2:
-                                                builder.append('2');
-                                                break;
-                                            case 0x3:
-                                                builder.append('3');
-                                                break;
-                                            case 0x4:
-                                                builder.append('4');
-                                                break;
-                                            case 0x5:
-                                                builder.append('5');
-                                                break;
-                                            case 0x6:
-                                                builder.append('6');
-                                                break;
-                                            case 0x7:
-                                                builder.append('7');
-                                                break;
-                                            case 0x8:
-                                                builder.append('8');
-                                                break;
-                                            case 0x9:
-                                                builder.append('9');
-                                                break;
-                                            case 0xA:
-                                                builder.append('A');
-                                                break;
-                                            case 0xB:
-                                                builder.append('B');
-                                                break;
-                                            case 0xC:
-                                                builder.append('C');
-                                                break;
-                                            case 0xD:
-                                                builder.append('D');
-                                                break;
-                                            case 0xE:
-                                                builder.append("E");
-                                                break;
-                                            case 0xF:
-                                                builder.append("F");
-                                                break;
-                                        }
-                                }
-                        }
-
+                case UNICODE:
+                case UNICODE >> 1:
+                case UNICODE >> 2:
+                case UNICODE >> 3:
+                    switch (ch) {
+                        case '0':
+                            unicode <<= 4;
+                            state >>= 1;
+                            continue string;
+                        case '1':
+                            unicode = (unicode << 4) | 0x1;
+                            state >>= 1;
+                            continue string;
+                        case '2':
+                            unicode = (unicode << 4) | 0x2;
+                            state >>= 1;
+                            continue string;
+                        case '3':
+                            unicode = (unicode << 4) | 0x3;
+                            state >>= 1;
+                            continue string;
+                        case '4':
+                            unicode = (unicode << 4) | 0x4;
+                            state >>= 1;
+                            continue string;
+                        case '5':
+                            unicode = (unicode << 4) | 0x5;
+                            state >>= 1;
+                            continue string;
+                        case '6':
+                            unicode = (unicode << 4) | 0x6;
+                            state >>= 1;
+                            continue string;
+                        case '7':
+                            unicode = (unicode << 4) | 0x7;
+                            state >>= 1;
+                            continue string;
+                        case '8':
+                            unicode = (unicode << 4) | 0x8;
+                            state >>= 1;
+                            continue string;
+                        case '9':
+                            unicode = (unicode << 4) | 0x9;
+                            state >>= 1;
+                            continue string;
+                        case 'A':
+                        case 'a':
+                            unicode = (unicode << 4) | 0xA;
+                            state >>= 1;
+                            continue string;
+                        case 'B':
+                        case 'b':
+                            unicode = (unicode << 4) | 0xB;
+                            state >>= 1;
+                            continue string;
+                        case 'C':
+                        case 'c':
+                            unicode = (unicode << 4) | 0xC;
+                            state >>= 1;
+                            continue string;
+                        case 'D':
+                        case 'd':
+                            unicode = (unicode << 4) | 0xD;
+                            state >>= 1;
+                            continue string;
+                        case 'E':
+                        case 'e':
+                            unicode = (unicode << 4) | 0xE;
+                            state >>= 1;
+                            continue string;
+                        case 'F':
+                        case 'f':
+                            unicode = (unicode << 4) | 0xF;
+                            state >>= 1;
+                            continue string;
+                        default:
+                            return null;
                     }
 
-                    builder.append("\"");
-                    return builder.toString();
-                });
+                case SCREEN:
+
+                    switch (ch) {
+                        case 'r':
+                            builder.append('\r');
+                            state = NORMAL;
+                            continue string;
+                        case 'n':
+                            builder.append('\n');
+                            state = NORMAL;
+                            continue string;
+                        case 't':
+                            builder.append('\t');
+                            state = NORMAL;
+                            continue string;
+                        case 'b':
+                            builder.append('\b');
+                            state = NORMAL;
+                            continue string;
+                        case 'f':
+                            builder.append('\f');
+                            state = NORMAL;
+                            continue string;
+                        case '\\':
+                            builder.append('\\');
+                            state = NORMAL;
+                            continue string;
+                        case '"':
+                            builder.append('"');
+                            state = NORMAL;
+                            continue string;
+                        case 'u':
+                            unicode = 0;
+                            state = UNICODE;
+                            continue string;
+                        default:
+                            return null;
+                    }
+
+                case NORMAL:
+                    switch (ch) {
+                        case '\\':
+                            state = SCREEN;
+                            continue string;
+                        case '"':
+                            return builder.toString();
+                        default:
+                            builder.append(ch);
+                            continue string;
+                    }
+
+                default:
+                    return null;
+            }
+        }
+        return null;
+
     }
 
-    static <K> Optional<K> read(String input, Accumulator<K> accumulator, int st) {
+    private static String string(String input) {
+        if (input == null )
+            return null;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("\"");
+
+        for (char ch : input.toCharArray()) {
+            switch (ch) {
+                case '\"':
+                    builder.append("\\\"");
+                    break;
+                case '\\':
+                    builder.append("\\\\");
+                    break;
+                case '\n':
+                    builder.append("\\n");
+                    break;
+                case '\r':
+                    builder.append("\\r");
+                    break;
+                case '\t':
+                    builder.append("\\t");
+                    break;
+                case '\b':
+                    builder.append("\\b");
+                    break;
+                case '\f':
+                    builder.append("\\f");
+                    break;
+                default:
+                    if (ch <= 127)
+                        builder.append(ch);
+                    else {
+                        builder.append("\\u");
+                        for (int round = 12; round >= 0; round -= 4)
+                            switch ((ch >> round) & 0xF) {
+                                case 0x0:
+                                    builder.append("0");
+                                    break;
+                                case 0x1:
+                                    builder.append('1');
+                                    break;
+                                case 0x2:
+                                    builder.append('2');
+                                    break;
+                                case 0x3:
+                                    builder.append('3');
+                                    break;
+                                case 0x4:
+                                    builder.append('4');
+                                    break;
+                                case 0x5:
+                                    builder.append('5');
+                                    break;
+                                case 0x6:
+                                    builder.append('6');
+                                    break;
+                                case 0x7:
+                                    builder.append('7');
+                                    break;
+                                case 0x8:
+                                    builder.append('8');
+                                    break;
+                                case 0x9:
+                                    builder.append('9');
+                                    break;
+                                case 0xA:
+                                    builder.append('A');
+                                    break;
+                                case 0xB:
+                                    builder.append('B');
+                                    break;
+                                case 0xC:
+                                    builder.append('C');
+                                    break;
+                                case 0xD:
+                                    builder.append('D');
+                                    break;
+                                case 0xE:
+                                    builder.append("E");
+                                    break;
+                                case 0xF:
+                                    builder.append("F");
+                                    break;
+                            }
+                    }
+            }
+
+        }
+
+        builder.append("\"");
+        return builder.toString();
+    }
+
+    protected static <K> K read(String input, Accumulator<K> accumulator, int st) {
         return read(input.toCharArray(), accumulator, st);
     }
 
-    private static <K> Optional<K> read(char[] input, Accumulator<K> accumulator, int st) {
+    private static <K> K read(char[] input, Accumulator<K> accumulator, int st) {
         Stack<Accumulator<?>> accumulators = new Stack<>();
         accumulators.push(accumulator);
         Stack<Integer> states = new Stack<>();
         states.push(EXIT);
         states.push(st);
 
+        int index = 0;
         main:
-        for (int index = 0; index < input.length; ) {
-
+        while (!states.isEmpty()) {
             switch (states.peek()) {
                 case OBJECT:
                     states.pop();
@@ -356,11 +386,11 @@ public class Json {
                                 states.push(OBJECT_NEXT_KEY_OR_END);
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_NEXT_KEY_OR_END:
                     states.pop();
@@ -383,11 +413,11 @@ public class Json {
                                 index++;
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_NEXT_KEY:
                     states.pop();
@@ -407,11 +437,11 @@ public class Json {
                                 states.push(STRING);
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_MAPPING:
                     states.pop();
@@ -431,11 +461,11 @@ public class Json {
                                 states.push(OBJECT_VALUE);
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_VALUE:
                     states.pop();
@@ -492,7 +522,7 @@ public class Json {
                                             continue main;
                                     }
                                 }
-                                return Optional.empty();
+                                return null;
 
                             case '"':
                                 states.push(OBJECT_DIVIDER_OR_END);
@@ -513,11 +543,11 @@ public class Json {
 
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_DIVIDER_OR_END:
                     states.pop();
@@ -542,19 +572,19 @@ public class Json {
                                 index++;
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case OBJECT_APPEND:
                     states.pop();
-                    Optional<String> map = accumulators.pop().collect().map(String::valueOf);
-                    if (map.isEmpty())
-                        return Optional.empty();
+                    Object rs = accumulators.pop().collect();
+                    if (rs == null)
+                        return null;
 
-                    accumulators.peek().append(map.get());
+                    accumulators.peek().append(String.valueOf(rs));
                     continue main;
 
                 case ARRAY:
@@ -576,11 +606,11 @@ public class Json {
                                 states.push(ARRAY_NEXT_OR_END);
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case ARRAY_NEXT_OR_END:
                     states.pop();
@@ -637,7 +667,7 @@ public class Json {
                                             continue main;
                                     }
                                 }
-                                return Optional.empty();
+                                return null;
 
                             case '"':
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -661,11 +691,11 @@ public class Json {
                                 index++;
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case ARRAY_NEXT:
                     states.pop();
@@ -721,7 +751,7 @@ public class Json {
                                             continue main;
                                     }
                                 }
-                                return Optional.empty();
+                                return null;
 
                             case '"':
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -742,11 +772,11 @@ public class Json {
 
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case ARRAY_DIVIDER_OR_END:
                     states.pop();
@@ -771,19 +801,19 @@ public class Json {
                                 index++;
                                 continue main;
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 case ARRAY_APPEND:
                     states.pop();
-                    Optional<String> arr = accumulators.pop().collect().map(String::valueOf);
-                    if (arr.isEmpty())
-                        return Optional.empty();
+                    Object arr = accumulators.pop().collect();
+                    if (arr == null)
+                        return null;
 
-                    accumulators.peek().append(arr.get());
+                    accumulators.peek().append(String.valueOf(arr));
                     continue main;
 
                 case STRING: {
@@ -798,7 +828,7 @@ public class Json {
 
                         switch (state) {
                             case 0:
-                                return Optional.empty();
+                                return null;
                             case INIT:
                                 state = ch == '"' ? NORMAL : 0;
                                 continue string;
@@ -830,7 +860,7 @@ public class Json {
                                         state = UNICODE;
                                         continue string;
                                     default:
-                                        return Optional.empty();
+                                        return null;
                                 }
 
                             case NORMAL:
@@ -847,10 +877,10 @@ public class Json {
                                 }
 
                             default:
-                                return Optional.empty();
+                                return null;
                         }
                     }
-                    return Optional.empty();
+                    return null;
                 }
 
                 case NUMBER: {
@@ -880,7 +910,7 @@ public class Json {
                                         state = NUMBER_PREFIX_OR_END;
                                         continue number;
                                     default:
-                                        return Optional.empty();
+                                        return null;
                                 }
 
                             case NUMBER_PREFIX:
@@ -899,7 +929,7 @@ public class Json {
                                         state = NUMBER_PREFIX_OR_END;
                                         continue number;
                                     default:
-                                        return Optional.empty();
+                                        return null;
                                 }
                             case NUMBER_PREFIX_OR_END:
 
@@ -934,10 +964,10 @@ public class Json {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return Optional.empty();
+                                            return null;
                                     }
                                 }
-                                return Optional.empty();
+                                return null;
 
                             case NUMBER_SUFFIX:
                                 switch (input[index]) {
@@ -954,7 +984,7 @@ public class Json {
                                         state = NUMBER_SUFFIX_OR_END;
                                         continue number;
                                     default:
-                                        return Optional.empty();
+                                        return null;
                                 }
 
                             case NUMBER_SUFFIX_OR_END:
@@ -990,10 +1020,10 @@ public class Json {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return Optional.empty();
+                                            return null;
                                     }
                                 }
-                                return Optional.empty();
+                                return null;
 
                             case NUMBER_SIGN_OR_NUM:
                                 switch (input[index]) {
@@ -1012,7 +1042,7 @@ public class Json {
                                         state = NUMBER_EXP;
                                         continue number;
                                     default:
-                                        return Optional.empty();
+                                        return null;
                                 }
 
                             case NUMBER_EXP:
@@ -1043,7 +1073,7 @@ public class Json {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return Optional.empty();
+                                            return null;
                                     }
 
                             case NUMBER_EXIT: {
@@ -1053,7 +1083,7 @@ public class Json {
                         }
                     }
 
-                    return Optional.empty();
+                    return null;
 
                 }
 
@@ -1075,7 +1105,7 @@ public class Json {
                                 continue main;
                         }
                     }
-                    return Optional.empty();
+                    return null;
                 }
                 case FALSE: {
                     states.pop();
@@ -1096,10 +1126,11 @@ public class Json {
                                 continue main;
                         }
                     }
-                    return Optional.empty();
+                    return null;
                 }
 
                 case EXIT:
+                    states.pop();
                     return accumulator.collect();
             }
 
@@ -1112,7 +1143,7 @@ public class Json {
 
         void append(String key);
 
-        Optional<R> collect();
+        R collect();
     }
 
     static class MapAccumulator implements Accumulator<List<String>> {
@@ -1125,58 +1156,42 @@ public class Json {
         }
 
         @Override
-        public Optional<List<String>> collect() {
-            return Optional.of(map)
-                    .filter(mp -> mp.size() % 2 == 0)
-                    .map(mp ->
-                            new ArrayList<String>(mp) {
-                                @Override
-                                public String toString() {
-                                    return String.format("{ %s }",
-                                            IntStream.range(0, size() / 2)
-                                                    .boxed()
-                                                    .map(index -> String.format("%s : %s", get(index * 2), get(index * 2 + 1)))
-                                                    .collect(Collectors.joining(", ")));
-                                }
-                            }
-                    );
-        }
-    }
+        public List<String> collect() {
+            if (map.size() % 2 != 0)
+                return null;
 
-    private static class JsonMap extends HashMap<String, String> {
+            return new ArrayList<String>(map) {
 
-        JsonMap(Map<String, String> map) {
-            super(map);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("{ %s }",
-                    entrySet()
-                            .stream()
-                            .map(en ->
-                                    String.format("%s : %s", en.getKey(), en.getValue()))
-                            .collect(Collectors.joining(", ")));
+                @Override
+                public String toString() {
+                    List<String> rs = new ArrayList<>();
+                    for (int index = 0; index < size() / 2; index++)
+                        rs.add(String.format("%s : %s", get(index * 2), get(index * 2 + 1)));
+                    return String.format("{ %s }", join(", ", rs));
+                }
+            };
         }
     }
 
     static class ArrayAccumulator implements Accumulator<List<String>> {
 
-        private List<String> array = new ArrayList<>();
+        private List<String> map = new ArrayList<>();
 
         @Override
-        public void append(String value) {
-            array.add(value);
+        public void append(String key) {
+            map.add(key);
         }
 
         @Override
-        public Optional<List<String>> collect() {
-            return Optional.of(new ArrayList<String>() {
+        public List<String> collect() {
+            return new ArrayList<String>(map) {
+
                 @Override
                 public String toString() {
-                    return String.format("[ %s ]", String.join(", ", array));
+
+                    return String.format("[ %s ]", join(", ", this));
                 }
-            });
+            };
         }
     }
 

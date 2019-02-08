@@ -1,36 +1,37 @@
 package ru.romeme.json;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class UnmodifiableMap {
 
-    public static Builder builder() {
+    public static <KK, VV> Builder<KK, VV> builder() {
 
-        class Shadow implements Builder {
+        class Shadow<K, V> implements Builder<K, V> {
 
-            private final Map<String, Object> map;
+            private final Map<K, V> map;
 
-            private Shadow(Map<String, Object> map) {this.map = map;}
+            private Shadow(Map<K, V> map) {this.map = map;}
 
             @Override
-            public <T> Builder put(String key, T vv) {
-                return new Shadow(new HashMap<>(map) {{ put(key, vv); }});
+            public Builder<K, V> put(final K key, final V vv) {
+                return new Shadow<>(new HashMap<K, V>(map) {{ put(key, vv); }});
             }
 
             @Override
-            public Map<String, ?> get() {
-                return Collections.unmodifiableMap(map);
+            public Map<K, V> build() {
+                return new HashMap<>(map);
             }
+
         }
 
-        return new Shadow(new HashMap<>());
+        return new Shadow<>(new HashMap<KK, VV>());
     }
 
-    public interface Builder extends Supplier<Map<String, ?>> {
+    public interface Builder<K, V> {
 
-        <T> Builder put(String key, T vv);
+        Builder<K, V> put(K key, V vv);
+
+        Map<K, V> build();
     }
 }

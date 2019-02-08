@@ -1,5 +1,7 @@
 package ru.romeme.json;
 
+import ru.romeme.json.Parser;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -7,15 +9,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public class JSArray extends Json {
+public final class FnArray extends Parser {
 
-    public static Optional<List<String>> parse(String input) {
-        return read(input, new ArrayAccumulator(), ARRAY)
-                .flatMap(map -> map.stream().collect(trimmer()));
-    }
-
-    static Collector<String, List<String>, Optional<List<String>>> trimmer() {
-        return new Collector<>() {
+    private static Collector<String, List<String>, Optional<List<String>>> trimmer() {
+        return new Collector<String, List<String>, Optional<List<String>>>() {
 
             @Override
             public Supplier<List<String>> supplier() {
@@ -34,13 +31,13 @@ public class JSArray extends Json {
 
             @Override
             public Function<List<String>, Optional<List<String>>> finisher() {
-                 return  arr -> arr.stream()
+                return arr -> arr.stream()
                         .reduce(
                                 Optional.of(new ArrayList<String>()),
                                 (accOP, e) ->
                                         accOP.flatMap(acc ->
-                                                decode(e).map(vv -> new ArrayList<String>(acc) {{ add(vv); }}
-                                                )
+                                                Optional.ofNullable(decode(e))
+                                                        .map(vv -> new ArrayList<String>(acc) {{ add(vv); }})
                                         ),
                                 (accOF, accOS) ->
                                         accOF.flatMap(accF ->
@@ -60,7 +57,7 @@ public class JSArray extends Json {
     }
 
     public static <T> Collector<T, List<T>, Optional<String>> collector() {
-        return new Collector<>() {
+        return new Collector<T, List<T>, Optional<String>>() {
 
             @Override
             public Supplier<List<T>> supplier() {
@@ -85,8 +82,8 @@ public class JSArray extends Json {
                                 Optional.of(new ArrayList<String>()),
                                 (accOP, e) ->
                                         accOP.flatMap(acc ->
-                                                encode(e).map(vv -> new ArrayList<String>(acc) {{ add(vv); }}
-                                                )
+                                                Optional.ofNullable(encode(e))
+                                                        .map(vv -> new ArrayList<String>(acc) {{ add(vv); }})
                                         ),
                                 (accOF, accOS) ->
                                         accOF.flatMap(accF ->
@@ -104,6 +101,11 @@ public class JSArray extends Json {
                                 Collector.Characteristics.UNORDERED));
             }
         };
+    }
+
+    public Optional<List<String>> parse(String input) {
+        return Optional.ofNullable(read(input, new ArrayAccumulator(), ARRAY))
+                .flatMap(map -> map.stream().collect(trimmer()));
     }
 
 }

@@ -1,13 +1,5 @@
 package ru.romeme.json;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 /**
  * Created by Roman.
  * r.alt.ctrl@gmail.com
@@ -31,7 +23,7 @@ public class RandomDataTest {
 //                }
 //
 //                String test = new String(out.toByteArray());
-//                Assert.assertTrue(!Json.array(test).isEmpty());
+//                Assert.assertTrue(!Parser.array(test).isEmpty());
 //            }
 //        }
 //
@@ -49,7 +41,7 @@ public class RandomDataTest {
 //                }
 //
 //                String test = new String(out.toByteArray());
-//                Assert.assertTrue(!Json.map(test).isEmpty());
+//                Assert.assertTrue(!Parser.map(test).isEmpty());
 //            }
 //        }
 //    }

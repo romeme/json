@@ -1,9 +1,9 @@
 package ru.romeme.json;
 
-import ru.romeme.json.Json;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.romeme.json.Parser.join;
 
 /**
  * Created by Roman.
@@ -25,7 +25,7 @@ public class Generator {
     }
 
     static String string(int size) {
-        return Json.encode(rnd(codes, size)).get();
+        return Parser.encode(rnd(codes, size)) ;
     }
 
     static String spacing() {
@@ -107,9 +107,7 @@ public class Generator {
             }
         }
 
-        builder.append(
-                String.join(spacing() + "," + spacing(), fields)
-        );
+        builder.append( join(spacing() + "," + spacing(), fields) );
         builder.append(']');
         builder.append(spacing());
         return builder.toString();
