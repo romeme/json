@@ -29,4 +29,16 @@ public final class JSArray extends Parser {
         return arr;
     }
 
+    public static String present(List<?> arr) {
+        List<String> rs = new ArrayList<>();
+
+        for (Object en : arr) {
+            String vv = encode(en);
+            if (vv == null)
+                return null;
+            rs.add(vv);
+        }
+
+        return String.format("[ %s ]", join(", ", rs));
+    }
 }

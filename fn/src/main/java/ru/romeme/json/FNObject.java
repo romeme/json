@@ -1,7 +1,5 @@
 package ru.romeme.json;
 
-import ru.romeme.json.Parser;
-
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -11,10 +9,11 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class FnObject extends Parser {
+public class FNObject extends Parser {
 
     public static Optional<Map<String, String>> parse(String input) {
-        return Optional.ofNullable(Parser.read(input, new MapAccumulator(), OBJECT))
+        return Optional.ofNullable(input)
+                .map(json -> Parser.read(json, new MapAccumulator(), OBJECT))
                 .flatMap(arr ->
                         Optional.of(arr)
                                 .filter(mp -> mp.size() % 2 == 0)
@@ -30,7 +29,11 @@ public class FnObject extends Parser {
 
     }
 
-    static Collector<Map.Entry<String, String>, Map<String, String>, Optional<Map<String, String>>> trimmer() {
+    public static Optional<String> present(Map<String, ?> map) {
+        return map.entrySet().stream().collect(collector());
+    }
+
+    private static Collector<Map.Entry<String, String>, Map<String, String>, Optional<Map<String, String>>> trimmer() {
         return new Collector<Map.Entry<String, String>, Map<String, String>, Optional<Map<String, String>>>() {
 
             @Override

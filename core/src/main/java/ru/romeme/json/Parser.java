@@ -37,7 +37,8 @@ class Parser {
     private static final int NUMBER_SUFFIX_OR_END = NUMBER_SUFFIX << 1;
     private static final int NUMBER_SIGN_OR_NUM = NUMBER_SUFFIX_OR_END << 1;
     private static final int NUMBER_EXP = NUMBER_SIGN_OR_NUM << 1;
-    private static final int NUMBER_EXIT = NUMBER_EXP << 1;
+    private static final int NUMBER_EXP_OR_END = NUMBER_EXP << 1;
+    private static final int NUMBER_EXIT = NUMBER_EXP_OR_END << 1;
 
     private static final int STRING = NUMBER_EXIT << 1;
 
@@ -45,9 +46,6 @@ class Parser {
     private static final int NORMAL = SCREEN << 1;
     private static final int UNICODE_END = NORMAL << 1;
     private static final int UNICODE = UNICODE_END << 4;
-
-    private static final int TRUE = UNICODE << 1;
-    private static final int FALSE = TRUE << 1;
 
     static String join(String div, List<String> in) {
         StringBuilder builder = new StringBuilder();
@@ -495,15 +493,51 @@ class Parser {
                                 states.push(OBJECT_DIVIDER_OR_END);
                                 states.push(NUMBER);
                                 continue main;
-                            case 't':
+                            case 't': {
                                 states.push(OBJECT_DIVIDER_OR_END);
-                                states.push(TRUE);
-                                continue main;
-                            case 'f':
+
+                                int state = 1 << 4;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 4 | 't':
+                                        case 1 << 3 | 'r':
+                                        case 1 << 2 | 'u':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("true");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+                            case 'f': {
                                 states.push(OBJECT_DIVIDER_OR_END);
-                                states.push(FALSE);
-                                continue main;
-                            case 'n':
+
+                                int state = 1 << 5;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 5 | 'f':
+                                        case 1 << 4 | 'a':
+                                        case 1 << 3 | 'l':
+                                        case 1 << 2 | 's':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("false");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+
+                            case 'n': {
                                 states.push(OBJECT_DIVIDER_OR_END);
 
                                 int state = 1 << 4;
@@ -520,9 +554,12 @@ class Parser {
                                             index++;
                                             accumulators.peek().append("null");
                                             continue main;
+                                        default:
+                                            return null;
                                     }
                                 }
                                 return null;
+                            }
 
                             case '"':
                                 states.push(OBJECT_DIVIDER_OR_END);
@@ -641,15 +678,50 @@ class Parser {
                                 states.push(NUMBER);
                                 continue main;
 
-                            case 't':
+                            case 't': {
                                 states.push(ARRAY_DIVIDER_OR_END);
-                                states.push(TRUE);
-                                continue main;
-                            case 'f':
+
+                                int state = 1 << 4;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 4 | 't':
+                                        case 1 << 3 | 'r':
+                                        case 1 << 2 | 'u':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("true");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+                            case 'f': {
                                 states.push(ARRAY_DIVIDER_OR_END);
-                                states.push(FALSE);
-                                continue main;
-                            case 'n':
+
+                                int state = 1 << 5;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 5 | 'f':
+                                        case 1 << 4 | 'a':
+                                        case 1 << 3 | 'l':
+                                        case 1 << 2 | 's':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("false");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+                            case 'n': {
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 int state = 1 << 4;
                                 nloop:
@@ -668,6 +740,7 @@ class Parser {
                                     }
                                 }
                                 return null;
+                            }
 
                             case '"':
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -725,15 +798,50 @@ class Parser {
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 states.push(NUMBER);
                                 continue main;
-                            case 't':
+                            case 't': {
                                 states.push(ARRAY_DIVIDER_OR_END);
-                                states.push(TRUE);
-                                continue main;
-                            case 'f':
+
+                                int state = 1 << 4;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 4 | 't':
+                                        case 1 << 3 | 'r':
+                                        case 1 << 2 | 'u':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("true");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+                            case 'f': {
                                 states.push(ARRAY_DIVIDER_OR_END);
-                                states.push(FALSE);
-                                continue main;
-                            case 'n':
+
+                                int state = 1 << 5;
+                                bool_loop:
+                                for (; index < input.length; index++) {
+                                    ch = input[index];
+                                    switch (state | ch) {
+                                        case 1 << 5 | 'f':
+                                        case 1 << 4 | 'a':
+                                        case 1 << 3 | 'l':
+                                        case 1 << 2 | 's':
+                                            state >>= 1;
+                                            continue bool_loop;
+                                        case 1 << 1 | 'e':
+                                            index++;
+                                            accumulators.peek().append("false");
+                                            continue main;
+                                    }
+                                }
+                                return null;
+                            }
+                            case 'n': {
                                 states.push(ARRAY_DIVIDER_OR_END);
                                 int state = 1 << 4;
                                 nloop:
@@ -752,6 +860,7 @@ class Parser {
                                     }
                                 }
                                 return null;
+                            }
 
                             case '"':
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -1029,6 +1138,8 @@ class Parser {
                                 switch (input[index]) {
                                     case '+':
                                     case '-':
+                                        state = NUMBER_EXP;
+                                        continue number;
                                     case '0':
                                     case '1':
                                     case '2':
@@ -1039,13 +1150,30 @@ class Parser {
                                     case '7':
                                     case '8':
                                     case '9':
-                                        state = NUMBER_EXP;
+                                        state = NUMBER_EXP_OR_END;
                                         continue number;
                                     default:
                                         return null;
                                 }
 
                             case NUMBER_EXP:
+                                switch (input[index]) {
+                                    case '0':
+                                    case '1':
+                                    case '2':
+                                    case '3':
+                                    case '4':
+                                    case '5':
+                                    case '6':
+                                    case '7':
+                                    case '8':
+                                    case '9':
+                                        state = NUMBER_EXP_OR_END;
+                                        continue number;
+                                    default:
+                                        return null;
+                                }
+                            case NUMBER_EXP_OR_END:
                                 loop:
                                 for (; index < input.length; index++)
                                     switch (input[index]) {
@@ -1085,48 +1213,6 @@ class Parser {
 
                     return null;
 
-                }
-
-                case TRUE: {
-                    states.pop();
-                    int state = 1 << 4;
-                    loop:
-                    for (; index < input.length; index++) {
-                        char ch = input[index];
-                        switch (state | ch) {
-                            case 1 << 4 | 't':
-                            case 1 << 3 | 'r':
-                            case 1 << 2 | 'u':
-                                state >>= 1;
-                                continue loop;
-                            case 1 << 1 | 'e':
-                                index++;
-                                accumulators.peek().append("true");
-                                continue main;
-                        }
-                    }
-                    return null;
-                }
-                case FALSE: {
-                    states.pop();
-                    int state = 1 << 5;
-                    loop:
-                    for (; index < input.length; index++) {
-                        char ch = input[index];
-                        switch (state | ch) {
-                            case 1 << 5 | 'f':
-                            case 1 << 4 | 'a':
-                            case 1 << 3 | 'l':
-                            case 1 << 2 | 's':
-                                state >>= 1;
-                                continue loop;
-                            case 1 << 1 | 'e':
-                                index++;
-                                accumulators.peek().append("false");
-                                continue main;
-                        }
-                    }
-                    return null;
                 }
 
                 case EXIT:

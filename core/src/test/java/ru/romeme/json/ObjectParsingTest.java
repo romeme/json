@@ -457,9 +457,51 @@ public class ObjectParsingTest {
 
         Assert.assertNull(JSObject.parse("{} ["));
         Assert.assertNull(JSObject.parse("{ "));
-        Assert.assertNull(JSObject.parse("{ int }"));
-        Assert.assertNull(JSObject.parse("{ int : 1 }"));
-//        Assert.assertNull(JSObject.parse("{ \"key\" : 1 }"));
-    }
 
+        Assert.assertNull(JSObject.parse("{ key }"));
+        Assert.assertNull(JSObject.parse("{ key : 1 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" "));
+        Assert.assertNull(JSObject.parse("{ \"key\" }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : "));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1 , }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1 , "));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : nnll }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : nuul }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : n"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : nu"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : nul"));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : null "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : null, "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : null, }"));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : - }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : +1 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1. }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.2E }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.2e }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.E12 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.e12 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.E+12 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.e+12 }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.2E- }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : 1.2e- }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : -1.2E- }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : -1.2e- }"));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : false "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : true "));
+
+        Assert.assertNull(JSObject.parse("{ \"key\" : fals }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : tru "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : fal }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : tr "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : fa }"));
+        Assert.assertNull(JSObject.parse("{ \"key\" : t "));
+        Assert.assertNull(JSObject.parse("{ \"key\" : f }"));
+
+    }
 }

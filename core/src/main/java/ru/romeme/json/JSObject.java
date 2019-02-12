@@ -1,5 +1,6 @@
 package ru.romeme.json;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,5 +31,19 @@ public final class JSObject extends Parser {
         }
 
         return map;
+    }
+
+    public static String present(Map<String, ?> map) {
+        List<String> pairs = new ArrayList<>();
+
+        for (Map.Entry<String, ?> en : map.entrySet()) {
+            String key = encode(en.getKey());
+            String vv = encode(en.getValue());
+            if (key == null || vv == null)
+                return null;
+            pairs.add(String.format("%s : %s", key, vv));
+        }
+
+        return String.format("{ %s }", join(", ", pairs));
     }
 }

@@ -1,7 +1,5 @@
 package ru.romeme.json;
 
-import ru.romeme.json.Parser;
-
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -9,7 +7,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public final class FnArray extends Parser {
+public final class FNArray extends Parser {
+
+    public static Optional<List<String>> parse(String input) {
+        return Optional.ofNullable(input)
+                .map(json -> read(json, new ArrayAccumulator(), ARRAY))
+                .flatMap(map -> map.stream().collect(trimmer()));
+    }
+
+    public static Optional<String> present(List<?> arr) {
+        return arr.stream().collect(collector());
+    }
 
     private static Collector<String, List<String>, Optional<List<String>>> trimmer() {
         return new Collector<String, List<String>, Optional<List<String>>>() {
@@ -101,11 +109,6 @@ public final class FnArray extends Parser {
                                 Collector.Characteristics.UNORDERED));
             }
         };
-    }
-
-    public Optional<List<String>> parse(String input) {
-        return Optional.ofNullable(read(input, new ArrayAccumulator(), ARRAY))
-                .flatMap(map -> map.stream().collect(trimmer()));
     }
 
 }
