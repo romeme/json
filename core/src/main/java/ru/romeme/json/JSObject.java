@@ -23,7 +23,7 @@ public final class JSObject extends Parser {
 
             String key = decode(kk);
             String value =
-                    vv.matches("^\".+\"$")
+                    vv.matches("^\".*\"$")
                             ? decode(vv)
                             : vv;
 

@@ -60,7 +60,7 @@ public class FNObject extends Parser {
                                         mapOP.flatMap(map ->
                                                 Optional.ofNullable(decode(en.getKey()))
                                                         .flatMap(key ->
-                                                                en.getValue().matches("^\".+\"$")
+                                                                en.getValue().matches("^\".*\"$")
                                                                         ?
                                                                         Optional.ofNullable(decode(en.getValue()))
                                                                                 .map(vv ->

@@ -376,8 +376,12 @@ public class ObjectParsingTest {
 
     @Test
     public void stringCheck() {
+        Assert.assertEquals(map("string", ""),
+                JSObject.parse("{\"string\":\"\"}"));
+
         Assert.assertEquals(map("string", "string-vv"),
                 JSObject.parse("{\"string\":\"string-vv\"}"));
+
         Assert.assertEquals(map("string", "\n\r\t\f\b\"\\"),
                 JSObject.parse("{\"string\": \"\\n\\r\\t\\f\\b\\\"\\\\\"}"));
         Assert.assertEquals(map("string", "\u0123\u4567\u8989\uAABB\uCCDD\uEEFF"),
