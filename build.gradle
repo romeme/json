@@ -1,5 +1,5 @@
-group 'ru.romeme.json'
-version '0.8'
+group 'ru.romeme'
+version '0.18'
 
 apply plugin:'java'
 
@@ -14,48 +14,43 @@ repositories {
     mavenLocal()
 }
 
-dependencies {
-    compile project(":core")
-    compile project(":fn")
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+group rootProject.group
+version rootProject.version
+
+task sources(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
-allprojects {
+task docs(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 
-    if (rootProject == it) return
+artifacts {
+    archives sources
+    archives docs
+}
 
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
+publishing {
 
-    group rootProject.group
-    version rootProject.version
-
-    task sources(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
+    repositories {
+        mavenLocal()
     }
-
-    task docs(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives sources
-        archives docs
-    }
-
-    publishing {
-
-        repositories {
-            mavenLocal()
-        }
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-                artifact tasks.sources
-                artifact tasks.docs
-            }
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact tasks.sources
+            artifact tasks.docs
         }
     }
+}
+
+dependencies {
+
+    testCompile 'junit:junit:4.12'
 }

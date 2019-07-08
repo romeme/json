@@ -58,7 +58,7 @@ class Parser {
         return builder.toString();
     }
 
-    static <K> String encode(K e) {
+    static <K> String encode(K e) throws JSPresentException {
         if (e == null)
             return "null";
         else if (e instanceof Number || e instanceof Boolean)
@@ -72,10 +72,11 @@ class Parser {
                 if ((vv = encode(o)) != null)
                     rs.add(vv);
                 else
-                    return null;
+                    throw new JSPresentException();
             }
             return String.format("[ %s ]", join(", ", rs));
-        } else if (e instanceof Map<?, ?>) {
+        }
+        else if (e instanceof Map<?, ?>) {
             List<String> rs = new ArrayList<>();
             String kk;
             String vv;
@@ -83,17 +84,18 @@ class Parser {
                 if ((vv = encode(en.getValue())) != null && (kk = encode(en.getKey())) != null)
                     rs.add(String.format("%s : %s", kk, vv));
                 else
-                    return null;
+                    throw new JSPresentException();
             }
             return String.format("{ %s }", join(", ", rs));
-        } else
-            return null;
+        }
+        else
+            throw new JSPresentException();
     }
 
     static String decode(String input) {
 
         if (input == null)
-            return null;
+            throw new JSParseException();
 
         char[] arr = input.toCharArray();
         int state = INIT;
@@ -107,7 +109,7 @@ class Parser {
 
             switch (state) {
                 case 0:
-                    return null;
+                    throw new JSParseException();
                 case INIT:
                     state = ch == '"' ? NORMAL : 0;
                     continue string;
@@ -193,7 +195,7 @@ class Parser {
                             state >>= 1;
                             continue string;
                         default:
-                            return null;
+                            throw new JSParseException();
                     }
 
                 case SCREEN:
@@ -232,7 +234,7 @@ class Parser {
                             state = UNICODE;
                             continue string;
                         default:
-                            return null;
+                            throw new JSParseException();
                     }
 
                 case NORMAL:
@@ -248,16 +250,16 @@ class Parser {
                     }
 
                 default:
-                    return null;
+                    throw new JSParseException();
             }
         }
-        return null;
+        throw new JSParseException();
 
     }
 
     private static String string(String input) {
         if (input == null)
-            return null;
+            throw new JSPresentException();
 
         StringBuilder builder = new StringBuilder();
         builder.append("\"");
@@ -384,11 +386,11 @@ class Parser {
                                 states.push(OBJECT_NEXT_KEY_OR_END);
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_NEXT_KEY_OR_END:
                     states.pop();
@@ -411,11 +413,11 @@ class Parser {
                                 index++;
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_NEXT_KEY:
                     states.pop();
@@ -435,11 +437,11 @@ class Parser {
                                 states.push(STRING);
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_MAPPING:
                     states.pop();
@@ -459,11 +461,11 @@ class Parser {
                                 states.push(OBJECT_VALUE);
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_VALUE:
                     states.pop();
@@ -512,7 +514,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
                             case 'f': {
                                 states.push(OBJECT_DIVIDER_OR_END);
@@ -534,7 +536,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
 
                             case 'n': {
@@ -552,13 +554,13 @@ class Parser {
                                             continue nloop;
                                         case 1 << 1 | 'l':
                                             index++;
-                                            accumulators.peek().append("null");
+                                            accumulators.peek().append(null);
                                             continue main;
                                         default:
-                                            return null;
+                                            throw new JSParseException();
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
 
                             case '"':
@@ -580,11 +582,11 @@ class Parser {
 
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_DIVIDER_OR_END:
                     states.pop();
@@ -609,17 +611,17 @@ class Parser {
                                 index++;
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case OBJECT_APPEND:
                     states.pop();
                     Object rs = accumulators.pop().collect();
                     if (rs == null)
-                        return null;
+                        throw new JSParseException();
 
                     accumulators.peek().append(String.valueOf(rs));
                     continue main;
@@ -643,11 +645,11 @@ class Parser {
                                 states.push(ARRAY_NEXT_OR_END);
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case ARRAY_NEXT_OR_END:
                     states.pop();
@@ -697,7 +699,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
                             case 'f': {
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -719,7 +721,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
                             case 'n': {
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -735,11 +737,11 @@ class Parser {
                                             continue nloop;
                                         case 1 << 1 | 'l':
                                             index++;
-                                            accumulators.peek().append("null");
+                                            accumulators.peek().append(null);
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
 
                             case '"':
@@ -764,11 +766,11 @@ class Parser {
                                 index++;
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case ARRAY_NEXT:
                     states.pop();
@@ -817,7 +819,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
                             case 'f': {
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -839,7 +841,7 @@ class Parser {
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
                             case 'n': {
                                 states.push(ARRAY_DIVIDER_OR_END);
@@ -855,11 +857,11 @@ class Parser {
                                             continue nloop;
                                         case 1 << 1 | 'l':
                                             index++;
-                                            accumulators.peek().append("null");
+                                            accumulators.peek().append(null);
                                             continue main;
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
                             }
 
                             case '"':
@@ -881,11 +883,11 @@ class Parser {
 
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case ARRAY_DIVIDER_OR_END:
                     states.pop();
@@ -910,17 +912,17 @@ class Parser {
                                 index++;
                                 continue main;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 case ARRAY_APPEND:
                     states.pop();
                     Object arr = accumulators.pop().collect();
                     if (arr == null)
-                        return null;
+                        throw new JSParseException();
 
                     accumulators.peek().append(String.valueOf(arr));
                     continue main;
@@ -937,7 +939,7 @@ class Parser {
 
                         switch (state) {
                             case 0:
-                                return null;
+                                throw new JSParseException();
                             case INIT:
                                 state = ch == '"' ? NORMAL : 0;
                                 continue string;
@@ -969,7 +971,7 @@ class Parser {
                                         state = UNICODE;
                                         continue string;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
 
                             case NORMAL:
@@ -986,10 +988,10 @@ class Parser {
                                 }
 
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
-                    return null;
+                    throw new JSParseException();
                 }
 
                 case NUMBER: {
@@ -1019,7 +1021,7 @@ class Parser {
                                         state = NUMBER_PREFIX_OR_END;
                                         continue number;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
 
                             case NUMBER_PREFIX:
@@ -1038,7 +1040,7 @@ class Parser {
                                         state = NUMBER_PREFIX_OR_END;
                                         continue number;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
                             case NUMBER_PREFIX_OR_END:
 
@@ -1073,10 +1075,10 @@ class Parser {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return null;
+                                            throw new JSParseException();
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
 
                             case NUMBER_SUFFIX:
                                 switch (input[index]) {
@@ -1093,7 +1095,7 @@ class Parser {
                                         state = NUMBER_SUFFIX_OR_END;
                                         continue number;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
 
                             case NUMBER_SUFFIX_OR_END:
@@ -1129,10 +1131,10 @@ class Parser {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return null;
+                                            throw new JSParseException();
                                     }
                                 }
-                                return null;
+                                throw new JSParseException();
 
                             case NUMBER_SIGN_OR_NUM:
                                 switch (input[index]) {
@@ -1153,7 +1155,7 @@ class Parser {
                                         state = NUMBER_EXP_OR_END;
                                         continue number;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
 
                             case NUMBER_EXP:
@@ -1171,7 +1173,7 @@ class Parser {
                                         state = NUMBER_EXP_OR_END;
                                         continue number;
                                     default:
-                                        return null;
+                                        throw new JSParseException();
                                 }
                             case NUMBER_EXP_OR_END:
                                 loop:
@@ -1201,7 +1203,7 @@ class Parser {
                                             state = NUMBER_EXIT;
                                             continue number;
                                         default:
-                                            return null;
+                                            throw new JSParseException();
                                     }
 
                             case NUMBER_EXIT: {
@@ -1211,7 +1213,7 @@ class Parser {
                         }
                     }
 
-                    return null;
+                    throw new JSParseException();
 
                 }
 
@@ -1229,7 +1231,7 @@ class Parser {
                             case ' ':
                                 continue loop;
                             default:
-                                return null;
+                                throw new JSParseException();
                         }
                     }
                     break main;

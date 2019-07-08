@@ -6,23 +6,16 @@ import java.util.List;
 public final class JSArray extends Parser {
 
     public static List<String> parse(String input) {
-        List<String> rs = read(input, new MapAccumulator(), Parser.OBJECT);
+        List<String> rs = read(input, new MapAccumulator(), Parser.ARRAY);
         if (rs == null)
-            return null;
+            throw new JSParseException();
 
         List<String> arr = new ArrayList<>();
         for (String vv : rs) {
-
-            if (vv == null)
-                return null;
             String value =
-                    vv.matches("^\".+\"$")
+                    String.valueOf(vv).matches("^\".+\"$")
                             ? decode(vv)
                             : vv;
-
-            if (value == null)
-                return null;
-
             arr.add(value);
         }
 
@@ -35,7 +28,7 @@ public final class JSArray extends Parser {
         for (Object en : arr) {
             String vv = encode(en);
             if (vv == null)
-                return null;
+                throw new JSPresentException();
             rs.add(vv);
         }
 
